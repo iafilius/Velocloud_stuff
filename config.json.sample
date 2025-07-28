@@ -1,0 +1,48 @@
+{
+
+
+    // getEnterpriseEvents
+
+    // The limit for the number of items per page
+    "limit_event": 2048,
+
+    // The start time in human-readable format for EnterpriseEvents
+    "start_human": "YYYY-MM-DD HH:MM:SS",
+
+    // The stop time in human-readable format
+    "stop_human": "YYYY-MM-DD HH:MM:SS",
+
+
+    // getEdgeFlowVisibilityMetrics
+    
+    // The limit for the number of items per page for flow API
+    "limit_flow": 204800,
+
+    // The start time in standard format for FlowVisability matrix format
+    "start": "YYYY-MM-DDTHH:MM:SS.ssssss+ZZ:ZZ",
+ 
+    // The stop time in standard format for FlowVisability matrix format
+    "stop": "YYYY-MM-DDTHH:MM:SS.ssssss+ZZ:ZZ",
+
+
+    // EdgeID for the flow API
+    "EdgeID": "YOUR_EDGE_ID",
+
+    // The VCO URL
+    "VCO": "your-vco-url.example.com",
+
+    // The authorization token
+    "AUTHTOKEN": "YOUR_AUTH_TOKEN",
+
+    // The base path for the API
+    "basepath": "/portal/rest/",
+
+    // Loglevel for logger python package
+    "LOG_LEVEL": "INFO",
+
+    // The enterpriseId for the API
+    "enterpriseId": 12345
+
+    // Whether to verify SSL certificates for API requests
+    "ssl_verify": true
+}
