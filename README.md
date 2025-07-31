@@ -1,21 +1,21 @@
-# Velocloud VCO Event and Flow Logs Fetcher
+# Velocloud (VMware SD-WAN, Broadcom, Arista) VCO Event and Flow Logs Fetcher
 
 [![Python](https://img.shields.io/badge/python-3.7%2B-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Last Update](https://img.shields.io/badge/last%20update-July%202025-blue)]()
 
-This repository contains Python scripts to fetch event logs and flow visibility metrics from a Velocloud VCO (Virtual Cloud Orchestrator) instance using the Velocloud API.
+This repository contains Python scripts to fetch event logs and flow visibility metrics from a Velocloud VCO (Virtual Cloud Orchestrator) instance using the Velocloud API. Velocloud technology has been known as VMware SD-WAN, and is now part of Broadcom and Arista Networks.
 
 ## Background
 
-Velocloud's VCO API allows you to retrieve event logs and flow logs for your enterprise. However, due to a long-standing bug in the VCO portal, only the first page of results is returned by default, making it difficult to collect complete logs for analysis or archiving.
+Velocloud's (VMware SD-WAN, Broadcom, Arista) VCO API allows you to retrieve event logs and flow logs for your enterprise. However, due to a long-standing bug in the VCO portal, only the first page of results is returned by default, making it difficult to collect complete logs for analysis or archiving.
 
 These scripts resolve this problem by automatically handling pagination, allowing you to fetch and save all available event and flow logs, not just the first page.
 
 > **Note:** Experience shows that the available data in the VCO is typically reset around the start of each new year. This means that, in practice, you can retrieve at most one year of logs, but sometimes the available data may be much less (close to zero), depending on when the reset occurred.
 
 ## Features
-- Fetches all event logs and flow visibility metrics from Velocloud VCO, overcoming the single-page limitation in VCO.
+- Fetches all event logs and flow visibility metrics from Velocloud VCO (VMware SD-WAN, Broadcom, Arista), overcoming the single-page limitation in VCO.
 - Uses the official Velocloud API.
 - Easy to configure via `config.jsonc`.
 - Modular and easy to modify for your own needs.
@@ -43,6 +43,59 @@ These scripts resolve this problem by automatically handling pagination, allowin
      ```bash
      python getVCOEnterpriseGetEdgeFlowVisibilityMetrics.py
      ```
+
+4. **Run the test suite:**
+   - To run unit tests for the event log script:
+     ```bash
+     python3 -m unittest test_getVCOEnterpriseGetEnterpriseEvents.py
+     ```
+   - To run unit tests for the flow visibility metrics script:
+     ```bash
+     python3 -m unittest test_getVCOEnterpriseGetEdgeFlowVisibilityMetrics.py
+     ```
+   - To run the tests in verbose mode (see which tests are executed):
+     ```bash
+     python3 -m unittest -v test_getVCOEnterpriseGetEdgeFlowVisibilityMetrics.py
+     ```
+   - To run the event log script tests in verbose mode:
+     ```bash
+     python3 -m unittest -v test_getVCOEnterpriseGetEnterpriseEvents.py
+     ```
+   - To run extra event log tests (edge cases, error handling, formatting):
+     ```bash
+     python3 -m unittest -v test_getVCOEnterpriseGetEnterpriseEvents_extra.py
+     ```
+
+## Running All Tests
+
+You can run all tests in the project at once using either of these methods:
+
+### 1. One-liner: Discover and run all tests automatically
+
+This will find and run all test files matching `test*.py` in the current directory and subdirectories:
+
+```bash
+python3 -m unittest discover
+```
+
+For more detailed output, use:
+
+```bash
+python3 -m unittest discover -v
+```
+
+### 2. Run specific test files manually
+
+You can also run individual test files directly, for example:
+
+```bash
+python3 -m unittest test_getVCOEnterpriseGetEnterpriseEvents.py
+python3 -m unittest test_getVCOEnterpriseGetEdgeFlowVisibilityMetrics.py
+python3 -m unittest -v test_getVCOEnterpriseGetEnterpriseEvents_extra.py
+python3 -m unittest -v test_getVCOEnterpriseGetEdgeFlowVisibilityMetrics_extra.py
+```
+
+Both methods are valid; the first is most convenient for running all tests at once, while the second allows you to target specific test suites.
 
 ## Python Environment Management
 
@@ -87,6 +140,29 @@ While Velocloud provides a Swagger/OpenAPI specification for its API, this proje
 - **Transparency and Debugging:** Writing the logic explicitly makes it easier to debug, adapt, and extend, especially when the API changes or behaves unexpectedly.
 
 If Velocloud's API documentation and generated libraries improve in the future, it may become practical to use them. For now, this approach is the most reliable for real-world data collection.
+
+## Testing Across Multiple Python Versions (pyenv)
+
+To ensure compatibility with all Python versions you have installed via pyenv, use the provided script:
+
+```bash
+bash test_all_pyenv_versions.sh
+```
+
+This script will:
+- Loop through all Python versions installed by pyenv.
+- For each version:
+  - Create a temporary virtual environment.
+  - Install all dependencies from `requirements.txt`.
+  - Run all unittests.
+  - Clean up the virtual environment.
+
+**Requirements:**
+- [pyenv](https://github.com/pyenv/pyenv) must be installed and initialized in your shell.
+- All desired Python versions should be installed via pyenv (e.g., `pyenv install 3.7.16`).
+- `requirements.txt` must be present in the project root.
+
+This is a convenient way to verify that your code and dependencies work across all supported Python versions.
 
 ---
 

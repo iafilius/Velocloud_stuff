@@ -7,22 +7,20 @@
     "limit_event": 2048,
 
     // The start time in human-readable format for EnterpriseEvents
+    // Format: "YYYY-MM-DD HH:MM:SS" (local time, timezone details will be added automatically)
     "start_human": "YYYY-MM-DD HH:MM:SS",
 
     // The stop time in human-readable format
+    // Format: "YYYY-MM-DD HH:MM:SS" (local time, timezone details will be added automatically)
     "stop_human": "YYYY-MM-DD HH:MM:SS",
 
 
     // getEdgeFlowVisibilityMetrics
     
-    // The limit for the number of items per page for flow API
+    // The limit for the number of items per page for flowMetrics API
+    // Note: The demo value shown here (204800) is the maximum empirically found to work in practice. 
+    // The VCO may or may not honor your request for this value, and may return fewer items per page depending on system limits or API changes.
     "limit_flow": 204800,
-
-    // The start time in standard format for FlowVisability matrix format
-    "start": "YYYY-MM-DDTHH:MM:SS.ssssss+ZZ:ZZ",
- 
-    // The stop time in standard format for FlowVisability matrix format
-    "stop": "YYYY-MM-DDTHH:MM:SS.ssssss+ZZ:ZZ",
 
 
     // EdgeID for the flow API

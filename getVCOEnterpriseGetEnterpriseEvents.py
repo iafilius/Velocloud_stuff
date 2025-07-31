@@ -26,9 +26,18 @@ warnings.simplefilter("once", InsecureRequestWarning)
 def human_to_unixtime(human_time, time_format="%Y-%m-%d %H:%M:%S"):
     """
     Convert a human-readable time string to Unix time (seconds since epoch).
+
+    Note:
+        - The returned Unix time is the number of seconds since 1970-01-01 00:00:00 *local time* (not UTC).
+        - This is system-dependent: the result will differ depending on the system's timezone and daylight saving time (DST) settings.
+        - Example: On a system set to UTC+1, '2020-02-29 12:00:00' will be interpreted as 12:00 in UTC+1, not UTC.
     """
+    if 'logger' in globals():   # to pass unit tests
+        logger.info(f"[human_to_unixtime] input: human_time={human_time}, time_format={time_format}")
     dt = datetime.strptime(human_time, time_format)
     unix_time = int(time.mktime(dt.timetuple()))
+    if 'logger' in globals():   # to pass unit tests
+        logger.info(f"[human_to_unixtime] output: {unix_time}")
     return unix_time
 
 # --- Configuration loading ---
@@ -59,6 +68,9 @@ def load_config(config_file):
         sys.exit(1)
     config['enterpriseId'] = int(enterprise_id)
     config['ssl_verify'] = os.getenv('SSL_VERIFY', str(config.get('ssl_verify', 'True'))).lower() in ('1', 'true', 'yes')
+    # Convert human times to unix ms here
+    config['start'] = human_to_unixtime(config['start_human']) * 1000
+    config['stop'] = human_to_unixtime(config['stop_human']) * 1000
     return config
 
 # --- Session creation ---
@@ -187,31 +199,24 @@ def main():
     Main process: loads config, sets up logging, starts worker, and writes data to file.
     Handles queue communication and progress logging.
     """
+    global logger
+    logger = setup_logging(logging.INFO)    # Initial logger, which is also available in load_config
     # Load configuration and initialize logging
     config = load_config('config.jsonc')
     log_level = getattr(logging, config['log_level'], logging.INFO)
+    # Reconfigure logger with the specified log level
     logger = setup_logging(log_level)
-    limit_event = config['limit_event']
-    start_human = config['start_human']
-    stop_human = config['stop_human']
-    VCO = config['VCO']
-    AUTHTOKEN = config['AUTHTOKEN']
-    basepath = config['basepath']
-    enterpriseId = config['enterpriseId']
-    ssl_verify = config['ssl_verify']
-    start = human_to_unixtime(start_human) * 1000
-    stop = human_to_unixtime(stop_human) * 1000
-    Vtype = "past12Months"
+    Vtype = "past12Months"  # This parameter was happily 'reverse engineered' in Europe
     # Prepare API URL and output filename
-    url = "https://" + VCO + basepath + "/event/getEnterpriseEvents"
-    output_filename = f'output-EnterpriseEvents_{start_human.replace(":", "-").replace(" ", "_")}_to_{stop_human.replace(":", "-").replace(" ", "_")}.json'
+    url = "https://" + config['VCO'] + config['basepath'] + "/event/getEnterpriseEvents"
+    output_filename = f"output-EnterpriseEvents_{config['start_human'].replace(':', '-').replace(' ', '_')}_to_{config['stop_human'].replace(':', '-').replace(' ', '_')}.json"
     session_params = {
-        'AuthH': "Token " + AUTHTOKEN,
-        'verify': ssl_verify
+        'AuthH': "Token " + config['AUTHTOKEN'],
+        'verify': config['ssl_verify']
     }
     # Start worker process for fetching data
     queue = Queue(maxsize=4)
-    fetcher = Process(target=fetch_data_worker, args=(queue, session_params, url, enterpriseId, start, stop, Vtype, limit_event, logger))
+    fetcher = Process(target=fetch_data_worker, args=(queue, session_params, url, config['enterpriseId'], config['start'], config['stop'], Vtype, config['limit_event'], logger))
     fetcher.start()
     # Write data chunks to output file as they arrive
     with open(output_filename, 'w') as output_file:
@@ -239,7 +244,7 @@ def main():
             logger.info(f"main: Wrote chunk of {len(data_chunk)} items, {chunk_size} bytes in {process_elapsed:.3f} s, speed: {process_speed_mbps:.3f} Mbps")
         output_file.write("\n]")
     fetcher.join()
-    logger.info(f"Data has been written to '{output_filename}'")
+    logger.info(f"main: Data has been written to '{output_filename}'")
 
 if __name__ == "__main__":
     main()
