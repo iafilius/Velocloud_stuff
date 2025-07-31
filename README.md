@@ -35,13 +35,23 @@ These scripts resolve this problem by automatically handling pagination, allowin
    - Copy `config.json.sample` to `config.jsonc` and fill in your VCO URL, API token, and other details.
 
 3. **Run the scripts:**
-   - To fetch event logs:
-     ```bash
-     python getVCOEnterpriseGetEnterpriseEvents.py
-     ```
    - To fetch flow visibility metrics:
      ```bash
-     python getVCOEnterpriseGetEdgeFlowVisibilityMetrics.py
+     python getVCOEnterpriseGetEdgeFlowVisibilityMetrics.py [--help] [--start_human "YYYY-MM-DD HH:MM:SS"] [--stop_human "YYYY-MM-DD HH:MM:SS"]
+     ```
+     - You can override the time range and other options via command-line arguments, environment variables, or config file. Command-line arguments take highest priority.
+     - For all options, run:
+     ```bash
+     python getVCOEnterpriseGetEdgeFlowVisibilityMetrics.py --help
+     ```
+
+   - To fetch event logs:
+     ```bash
+     python getVCOEnterpriseGetEnterpriseEvents.py [--help] [--start_human "YYYY-MM-DD HH:MM:SS"] [--stop_human "YYYY-MM-DD HH:MM:SS"]
+     ```
+     - For all options, run:
+     ```bash
+     python getVCOEnterpriseGetEnterpriseEvents.py --help
      ```
 
 4. **Run the test suite:**
@@ -163,6 +173,33 @@ This script will:
 - `requirements.txt` must be present in the project root.
 
 This is a convenient way to verify that your code and dependencies work across all supported Python versions.
+
+## Data Conversion
+
+You can easily convert the output JSON files (or other formats) using Python one-liners with pandas:
+
+- **Convert JSON to CSV:**
+  ```bash
+  python -c "import pandas as pd; pd.read_json('input.json').to_csv('output.csv', index=False)"
+  ```
+- **Convert JSON to Excel (XLSX):**
+  ```bash
+  python -c "import pandas as pd; pd.read_json('input.json').to_excel('output.xlsx', index=False)"
+  ```
+- **Convert CSV to JSON:**
+  ```bash
+  python -c "import pandas as pd; pd.read_csv('input.csv').to_json('output.json', orient='records', lines=False)"
+  ```
+- **Convert CSV to Excel:**
+  ```bash
+  python -c "import pandas as pd; pd.read_csv('input.csv').to_excel('output.xlsx', index=False)"
+  ```
+- **Convert Excel to CSV:**
+  ```bash
+  python -c "import pandas as pd; pd.read_excel('input.xlsx').to_csv('output.csv', index=False)"
+  ```
+
+All of these require the `pandas` package (not in `requirements.txt`, so you may need to execute ```pip instal pandas```)
 
 ---
 

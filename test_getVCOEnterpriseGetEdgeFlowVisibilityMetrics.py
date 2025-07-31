@@ -45,5 +45,35 @@ class TestGetVCOEnterpriseGetEdgeFlowVisibilityMetrics(unittest.TestCase):
         self.assertEqual(session.headers['Authorization'], 'Token test')
         self.assertFalse(session.verify)
 
+    def test_cli_overrides_config(self):
+        # Simulate CLI args
+        class Args:
+            start_human = "2099-01-01 00:00:00"
+            stop_human = "2099-12-31 23:59:59"
+        config_path = "test_config.jsonc"
+        with open(config_path, "w") as f:
+            f.write('''{
+                "limit_flow": 123,
+                "start_human": "2024-02-20 03:04:00",
+                "stop_human": "2025-02-22 15:04:00",
+                "VCO": "test-vco",
+                "AUTHTOKEN": "token",
+                "basepath": "/api/",
+                "EdgeID": 99,
+                "enterpriseId": 42,
+                "ssl_verify": false
+            }''')
+        config = load_config(config_path, cli_args=Args)
+        self.assertEqual(config['start_human'], "2099-01-01 00:00:00")
+        self.assertEqual(config['stop_human'], "2099-12-31 23:59:59")
+        os.remove(config_path)
+
+    def test_argparse_help(self):
+        import subprocess, sys
+        result = subprocess.run([sys.executable, 'getVCOEnterpriseGetEdgeFlowVisibilityMetrics.py', '--help'], capture_output=True, text=True)
+        self.assertIn('usage:', result.stdout)
+        self.assertIn('--start_human', result.stdout)
+        self.assertIn('--stop_human', result.stdout)
+
 if __name__ == "__main__":
     unittest.main()

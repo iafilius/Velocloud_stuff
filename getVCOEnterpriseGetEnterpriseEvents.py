@@ -18,6 +18,7 @@ from multiprocessing import Process, Queue
 import sys
 import warnings
 from urllib3.exceptions import InsecureRequestWarning
+import argparse
 
 # Only show InsecureRequestWarning once if SSL verification is disabled
 warnings.simplefilter("once", InsecureRequestWarning)
@@ -40,11 +41,20 @@ def human_to_unixtime(human_time, time_format="%Y-%m-%d %H:%M:%S"):
         logger.info(f"[human_to_unixtime] output: {unix_time}")
     return unix_time
 
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Fetch Velocloud VCO Enterprise Events with flexible time range and config overrides."
+    )
+    parser.add_argument('--start_human', type=str, help='Start time (human-readable, e.g. "2024-02-20 03:04:00")')
+    parser.add_argument('--stop_human', type=str, help='Stop time (human-readable, e.g. "2025-02-22 15:04:00")')
+    # Add more arguments here as needed
+    return parser.parse_args()
+
 # --- Configuration loading ---
-def load_config(config_file):
+def load_config(config_file, cli_args=None):
     """
-    Load configuration from JSONC file and environment variables.
-    Environment variables override file values.
+    Load configuration from JSONC file, environment variables, and command line arguments.
+    Priority: command line > environment > config file > default.
     Exits if required parameters are missing.
     """
     parser = JsonComment(json)
@@ -55,8 +65,13 @@ def load_config(config_file):
         logging.error(f"Failed to load config file '{config_file}': {e}")
         sys.exit(1)
     config['limit_event'] = int(os.getenv('LIMIT_EVENT', config.get('limit_event', 2048)))
-    config['start_human'] = os.getenv('START_HUMAN', config.get('start_human', "2024-02-20 03:04:00"))
-    config['stop_human'] = os.getenv('STOP_HUMAN', config.get('stop_human', "2025-02-22 15:04:00"))
+    # Priority: CLI > ENV > config > default
+    start_human = (cli_args.start_human if cli_args and cli_args.start_human else
+                   os.getenv('START_HUMAN', config.get('start_human', "2024-02-20 03:04:00")))
+    stop_human = (cli_args.stop_human if cli_args and cli_args.stop_human else
+                  os.getenv('STOP_HUMAN', config.get('stop_human', "2025-02-22 15:04:00")))
+    config['start_human'] = start_human
+    config['stop_human'] = stop_human
     config['VCO'] = os.getenv('VCO', config.get('VCO', "vco99-us.velocloud.net"))
     config['AUTHTOKEN'] = os.getenv('AUTHTOKEN', config.get('AUTHTOKEN', "your_default_token"))
     config['basepath'] = os.getenv('BASEPATH', config.get('basepath', "/portal/rest/"))
@@ -201,8 +216,10 @@ def main():
     """
     global logger
     logger = setup_logging(logging.INFO)    # Initial logger, which is also available in load_config
+    # Parse command line arguments
+    cli_args = parse_args()
     # Load configuration and initialize logging
-    config = load_config('config.jsonc')
+    config = load_config('config.jsonc', cli_args=cli_args)
     log_level = getattr(logging, config['log_level'], logging.INFO)
     # Reconfigure logger with the specified log level
     logger = setup_logging(log_level)
